@@ -116,7 +116,16 @@ func (c *OrderConsumer) processMessage(ctx context.Context, msg kafka.Message) {
 		Status:         models.StatusPending,
 		RetryCount:     event.RetryCount,
 	}
-	c.repo.CreateOrder(ctx, order)
+	isNew, err := c.repo.CreateOrder(ctx, order)
+	if err != nil {
+		log.Printf("[Consumer] Failed to create order record: %v", err)
+		return // Will be retried via Kafka redelivery
+	}
+	if !isNew {
+		log.Printf("[Consumer] Order already exists (idempotent skip): %s", event.OrderID)
+		c.metrics.OrdersProcessed.WithLabelValues("duplicate").Inc()
+		return
+	}
 
 	// ── Step 3: Simulate Payment ──
 	paymentCtx, cancel := context.WithTimeout(ctx, 5*time.Second)

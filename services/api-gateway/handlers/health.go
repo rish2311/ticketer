@@ -18,7 +18,7 @@ func NewHealthHandler(rc *redis.Client) *HealthHandler {
 
 // HealthCheck handles GET /health
 func (h *HealthHandler) HealthCheck(c *fiber.Ctx) error {
-	ctx := c.Context()
+	ctx := c.UserContext()
 	services := make(map[string]string)
 
 	// Check Redis

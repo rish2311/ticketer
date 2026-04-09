@@ -2,10 +2,12 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ticketer/shared/models"
 )
@@ -70,7 +72,7 @@ func (r *Repository) CreateOrder(ctx context.Context, order *models.Order) (bool
 
 	if err != nil {
 		// If no rows returned, it means the idempotency key already exists
-		if err.Error() == "no rows in result set" {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return false, nil
 		}
 		return false, fmt.Errorf("failed to create order: %w", err)
@@ -114,7 +116,7 @@ func (r *Repository) GetOrderByIdempotencyKey(ctx context.Context, key string) (
 		&order.UpdatedAt,
 	)
 	if err != nil {
-		if err.Error() == "no rows in result set" {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get order: %w", err)

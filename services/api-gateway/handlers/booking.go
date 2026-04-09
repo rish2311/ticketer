@@ -83,7 +83,7 @@ func (h *BookingHandler) CreateBooking(c *fiber.Ctx) error {
 		})
 	}
 
-	ctx := c.Context()
+	ctx := c.UserContext()
 
 	// ── Step 1: Redis Gatekeeper ──
 	result, err := h.gatekeeper.TryAcquireTicket(ctx, req.EventID, req.UserID, h.cfg.LockTTLSeconds)

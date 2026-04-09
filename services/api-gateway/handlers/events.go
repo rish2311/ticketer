@@ -29,7 +29,7 @@ func NewEventHandler(gk *redisclient.Gatekeeper, cfg *config.Config) *EventHandl
 func (h *EventHandler) GetEvents(c *fiber.Ctx) error {
 	// For the demo, return the seeded event with live availability
 	eventID := "550e8400-e29b-41d4-a716-446655440000"
-	remaining, err := h.gatekeeper.GetInventory(c.Context(), eventID)
+	remaining, err := h.gatekeeper.GetInventory(c.UserContext(), eventID)
 	if err != nil {
 		log.Printf("[Events] Failed to get inventory: %v", err)
 		remaining = 0
@@ -63,7 +63,7 @@ func (h *EventHandler) GetEventByID(c *fiber.Ctx) error {
 		})
 	}
 
-	remaining, err := h.gatekeeper.GetInventory(c.Context(), eventID)
+	remaining, err := h.gatekeeper.GetInventory(c.UserContext(), eventID)
 	if err != nil {
 		log.Printf("[Events] Failed to get inventory for %s: %v", eventID, err)
 		remaining = 0
@@ -97,7 +97,7 @@ func (h *EventHandler) StartFlashSale(c *fiber.Ctx) error {
 	}
 
 	// Check if inventory is already initialized
-	existing, err := h.gatekeeper.GetInventory(c.Context(), eventID)
+	existing, err := h.gatekeeper.GetInventory(c.UserContext(), eventID)
 	if err == nil && existing > 0 {
 		return c.JSON(fiber.Map{
 			"status":  "already_started",
@@ -107,7 +107,7 @@ func (h *EventHandler) StartFlashSale(c *fiber.Ctx) error {
 	}
 
 	// Initialize inventory in Redis
-	if err := h.gatekeeper.InitInventory(c.Context(), eventID, h.cfg.TicketInventory); err != nil {
+	if err := h.gatekeeper.InitInventory(c.UserContext(), eventID, h.cfg.TicketInventory); err != nil {
 		log.Printf("[Events] Failed to initialize inventory: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{
 			Error:   "init_failed",
