@@ -1,0 +1,22 @@
+# ============================================
+# Prometheus Configuration
+# ============================================
+
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  # API Gateway metrics
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 3s
+
+  # Order Worker metrics
+  - job_name: 'order-worker'
+    static_configs:
+      - targets: ['order-worker:9091']
+    metrics_path: '/metrics'
+    scrape_interval: 3s
